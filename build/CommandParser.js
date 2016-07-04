@@ -25,18 +25,28 @@ var CommandParser = exports.CommandParser = function () {
 			var action = commandObject.action;
 
 			switch (action) {
-				case 'listExports':
-					return this.listExports(commandObject);
+				case 'listImports':
+					return this.listImports(commandObject);
+				case 'getInsertPoint':
+					return this.getInsertPoint(commandObject);
 				default:
 					throw new Error('Unknown action ' + action);
 			}
 		}
 	}, {
-		key: 'listExports',
-		value: function listExports(commandObject) {
+		key: 'listImports',
+		value: function listImports(commandObject) {
 			var file = commandObject.file;
-			var exportList = this.project.listExports(file);
-			console.log(JSON.stringify({ exportList: exportList }));
+			var importList = this.project.listExports(file);
+			var modules = this.project.getModules();
+			return JSON.stringify({ importList: importList, modules: modules });
+		}
+	}, {
+		key: 'getInsertPoint',
+		value: function getInsertPoint(commandObject) {
+			var contents = commandObject.contents;
+			var insertPoint = this.project.findInsertPoint(contents);
+			return JSON.stringify({ insertPoint: insertPoint });
 		}
 	}]);
 

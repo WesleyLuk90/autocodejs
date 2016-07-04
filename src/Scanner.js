@@ -1,22 +1,9 @@
-import glob from 'glob';
-import Q from 'q';
 import { FileBuilder } from './FileBuilder';
 import chokidir from 'chokidar';
 
 export class Scanner {
 	constructor(project) {
 		this.project = project;
-	}
-
-	loadFiles() {
-		const options = {
-			cwd: this.project.getProjectRoot(),
-		};
-		return Q.nfcall(glob, this.project.getGlobString(), options)
-			.then(files => Q.all(
-				files.map(path => FileBuilder.createFile(this.project, path))
-			))
-			.then(files => this.project.setFiles(files));
 	}
 
 	updateFile(path) {
@@ -29,11 +16,28 @@ export class Scanner {
 		this.project.removeFile(path);
 	}
 
+	addNodeModule(path) {
+		this.project.addNodeModule(this.getModuleName(path));
+	}
+
+	removeNodeModule(path) {
+		this.project.removeNodeModule(this.getModuleName(path));
+	}
+
+	getModuleName(path) {
+		return path.replace(/.*[\/\\]([^\/\\]+)/, '$1');
+	}
+
 	watch() {
 		const options = { cwd: this.project.getProjectRoot() };
 		this.watcher = chokidir.watch(this.project.getGlobString(), options);
 		this.watcher.on('add', (path) => this.updateFile(path));
 		this.watcher.on('change', (path) => this.updateFile(path));
 		this.watcher.on('unlink', (path) => this.removeFile(path));
+
+		const modulesOptions = { cwd: this.project.getProjectRoot() };
+		this.modulesWatcher = chokidir.watch('node_modules/*', modulesOptions);
+		this.modulesWatcher.on('addDir', (path) => this.addNodeModule(path));
+		this.modulesWatcher.on('unlinkDir', (path) => this.removeNodeModule(path));
 	}
 }

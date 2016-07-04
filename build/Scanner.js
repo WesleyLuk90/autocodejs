@@ -7,14 +7,6 @@ exports.Scanner = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _glob = require('glob');
-
-var _glob2 = _interopRequireDefault(_glob);
-
-var _q = require('q');
-
-var _q2 = _interopRequireDefault(_q);
-
 var _FileBuilder = require('./FileBuilder');
 
 var _chokidar = require('chokidar');
@@ -33,20 +25,35 @@ var Scanner = exports.Scanner = function () {
 	}
 
 	_createClass(Scanner, [{
-		key: 'loadFiles',
-		value: function loadFiles() {
+		key: 'updateFile',
+		value: function updateFile(path) {
 			var _this = this;
 
-			var options = {
-				cwd: this.project.getProjectRoot()
-			};
-			return _q2.default.nfcall(_glob2.default, this.project.getGlobString(), options).then(function (files) {
-				return _q2.default.all(files.map(function (path) {
-					return _FileBuilder.FileBuilder.createFile(_this.project, path);
-				}));
-			}).then(function (files) {
-				return _this.project.setFiles(files);
+			return _FileBuilder.FileBuilder.createFile(this.project, path).then(function (file) {
+				return _this.project.addFile(file);
+			}).catch(function (e) {
+				return console.error(e.stack);
 			});
+		}
+	}, {
+		key: 'removeFile',
+		value: function removeFile(path) {
+			this.project.removeFile(path);
+		}
+	}, {
+		key: 'addNodeModule',
+		value: function addNodeModule(path) {
+			this.project.addNodeModule(this.getModuleName(path));
+		}
+	}, {
+		key: 'removeNodeModule',
+		value: function removeNodeModule(path) {
+			this.project.removeNodeModule(this.getModuleName(path));
+		}
+	}, {
+		key: 'getModuleName',
+		value: function getModuleName(path) {
+			return path.replace(/.*[\/\\]([^\/\\]+)/, '$1');
 		}
 	}, {
 		key: 'watch',
@@ -56,21 +63,22 @@ var Scanner = exports.Scanner = function () {
 			var options = { cwd: this.project.getProjectRoot() };
 			this.watcher = _chokidar2.default.watch(this.project.getGlobString(), options);
 			this.watcher.on('add', function (path) {
-				_FileBuilder.FileBuilder.createFile(_this2.project, path).then(function (file) {
-					return _this2.project.addFile(file);
-				}).catch(function (e) {
-					return console.error(e.stack);
-				});
+				return _this2.updateFile(path);
 			});
 			this.watcher.on('change', function (path) {
-				_FileBuilder.FileBuilder.createFile(_this2.project, path).then(function (file) {
-					return _this2.project.addFile(file);
-				}).catch(function (e) {
-					return console.error(e.stack);
-				});
+				return _this2.updateFile(path);
 			});
 			this.watcher.on('unlink', function (path) {
-				_this2.project.removeFile(path);
+				return _this2.removeFile(path);
+			});
+
+			var modulesOptions = { cwd: this.project.getProjectRoot() };
+			this.modulesWatcher = _chokidar2.default.watch('node_modules/*', modulesOptions);
+			this.modulesWatcher.on('addDir', function (path) {
+				return _this2.addNodeModule(path);
+			});
+			this.modulesWatcher.on('unlinkDir', function (path) {
+				return _this2.removeNodeModule(path);
 			});
 		}
 	}]);

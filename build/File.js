@@ -7,10 +7,6 @@ exports.File = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _babylon = require('babylon');
-
-var babylon = _interopRequireWildcard(_babylon);
-
 var _FileExport = require('./FileExport');
 
 var _FileImport = require('./FileImport');
@@ -22,8 +18,6 @@ var _lodash = require('lodash');
 var _lodash2 = _interopRequireDefault(_lodash);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -60,7 +54,7 @@ var File = exports.File = function () {
 			var options = {
 				sourceType: this.project.getSourceType()
 			};
-			this.ast = babylon.parse(this.contents, options);
+			this.ast = this.project.getCodeParser().parse(this.contents, options);
 		}
 	}, {
 		key: 'getBody',
@@ -73,15 +67,7 @@ var File = exports.File = function () {
 			var _this = this;
 
 			var exportStatements = this.getBody().filter(function (node) {
-				switch (node.type) {
-					case 'ExportNamedDeclaration':
-					case 'ExportSpecifier':
-					case 'ExportDefaultDeclaration':
-					case 'ExportAllDeclaration':
-						return true;
-					default:
-						return false;
-				}
+				return File.isExport(node);
 			}).map(function (statement) {
 				return new _FileExport.FileExport(_this, statement);
 			});
@@ -93,15 +79,7 @@ var File = exports.File = function () {
 			var _this2 = this;
 
 			var importStatements = this.getBody().filter(function (node) {
-				switch (node.type) {
-					case 'ImportDeclaration':
-					case 'ImportSpecifier':
-					case 'ImportDefaultSpecifier':
-					case 'ImportNamespaceSpecifier':
-						return true;
-					default:
-						return false;
-				}
+				return File.isImport(node);
 			}).map(function (statement) {
 				return new _FileImport.FileImport(_this2, statement);
 			});
@@ -132,6 +110,32 @@ var File = exports.File = function () {
 			return _lodash2.default.flatten(this.exportStatements.map(function (st) {
 				return st.getExportedNames();
 			}));
+		}
+	}], [{
+		key: 'isExport',
+		value: function isExport(node) {
+			switch (node.type) {
+				case 'ExportNamedDeclaration':
+				case 'ExportSpecifier':
+				case 'ExportDefaultDeclaration':
+				case 'ExportAllDeclaration':
+					return true;
+				default:
+					return false;
+			}
+		}
+	}, {
+		key: 'isImport',
+		value: function isImport(node) {
+			switch (node.type) {
+				case 'ImportDeclaration':
+				case 'ImportSpecifier':
+				case 'ImportDefaultSpecifier':
+				case 'ImportNamespaceSpecifier':
+					return true;
+				default:
+					return false;
+			}
 		}
 	}]);
 

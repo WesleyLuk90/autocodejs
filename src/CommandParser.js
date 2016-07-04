@@ -11,16 +11,25 @@ export class CommandParser {
 		const action = commandObject.action;
 
 		switch (action) {
-			case 'listExports':
-				return this.listExports(commandObject);
+			case 'listImports':
+				return this.listImports(commandObject);
+			case 'getInsertPoint':
+				return this.getInsertPoint(commandObject);
 			default:
 				throw new Error(`Unknown action ${action}`);
 		}
 	}
 
-	listExports(commandObject) {
+	listImports(commandObject) {
 		const file = commandObject.file;
-		const exportList = this.project.listExports(file);
-		console.log(JSON.stringify({ exportList }));
+		const importList = this.project.listExports(file);
+		const modules = this.project.getModules();
+		return JSON.stringify({ importList, modules });
+	}
+
+	getInsertPoint(commandObject) {
+		const contents = commandObject.contents;
+		const insertPoint = this.project.findInsertPoint(contents);
+		return JSON.stringify({ insertPoint });
 	}
 }

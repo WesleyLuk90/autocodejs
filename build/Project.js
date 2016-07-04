@@ -15,6 +15,14 @@ var _fs = require('fs');
 
 var _path = require('path');
 
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _CodeParser = require('./CodeParser');
+
+var _File = require('./File');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -25,6 +33,7 @@ var Project = exports.Project = function () {
 
 		this.projectRoot = projectRoot;
 		this.filesByPath = new Map();
+		this.nodeModules = new Set();
 	}
 
 	_createClass(Project, [{
@@ -69,8 +78,26 @@ var Project = exports.Project = function () {
 			this.filesByPath.delete(file);
 		}
 	}, {
+		key: 'countSlashes',
+		value: function countSlashes(path) {
+			var count = 0;
+			for (var i = 0; i < path.length; i++) {
+				if (path.charAt(i) === '/') {
+					count++;
+				}
+			}
+			return count;
+		}
+	}, {
+		key: 'getCodeParser',
+		value: function getCodeParser() {
+			return new _CodeParser.CodeParser();
+		}
+	}, {
 		key: 'listExports',
 		value: function listExports(relativeFile) {
+			var _this2 = this;
+
 			var exportsList = [];
 			this.filesByPath.forEach(function (file) {
 				var exportInfo = {};
@@ -80,7 +107,49 @@ var Project = exports.Project = function () {
 					exportsList.push(exportInfo);
 				}
 			});
-			return exportsList;
+			var orderedExportsList = _lodash2.default.orderBy(exportsList, [function (e) {
+				return _this2.countSlashes(e.path);
+			}, function (e) {
+				return e.path;
+			}]);
+			console.log(orderedExportsList);
+			return orderedExportsList;
+		}
+	}, {
+		key: 'addNodeModule',
+		value: function addNodeModule(path) {
+			this.nodeModules.add(path);
+		}
+	}, {
+		key: 'removeNodeModule',
+		value: function removeNodeModule(path) {
+			this.nodeModules.delete(path);
+		}
+	}, {
+		key: 'getModules',
+		value: function getModules() {
+			var modules = [];
+			this.nodeModules.forEach(function (module) {
+				return modules.push(module);
+			});
+			return modules;
+		}
+	}, {
+		key: 'findInsertPoint',
+		value: function findInsertPoint(fileContents) {
+			var insertPoint = 0;
+			try {
+				var file = this.getCodeParser().parse(fileContents);
+				file.program.body.forEach(function (statement) {
+					if (_File.File.isImport(statement)) {
+						insertPoint = statement.end;
+					}
+				});
+				return insertPoint;
+			} catch (e) {
+				// Default to the start of the file for the insert point
+				return insertPoint;
+			}
 		}
 	}]);
 
