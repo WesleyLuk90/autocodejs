@@ -35,7 +35,7 @@ export class Project {
 	}
 
 	removeFile(file) {
-		this.filesByPath.set(file);
+		this.filesByPath.delete(file);
 	}
 
 	listExports(relativeFile) {

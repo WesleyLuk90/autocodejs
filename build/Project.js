@@ -66,7 +66,7 @@ var Project = exports.Project = function () {
 	}, {
 		key: 'removeFile',
 		value: function removeFile(file) {
-			this.filesByPath.set(file);
+			this.filesByPath.delete(file);
 		}
 	}, {
 		key: 'listExports',
