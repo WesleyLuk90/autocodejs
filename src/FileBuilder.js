@@ -7,6 +7,6 @@ export class FileBuilder {
 	static createFile(project, path) {
 		const fullPath = join(project.getProjectRoot(), path);
 		return Q.nfcall(readFile, fullPath, 'utf-8')
-			.then(contents => new File(fullPath, contents, project));
+			.then(contents => new File(path, contents, project));
 	}
 }

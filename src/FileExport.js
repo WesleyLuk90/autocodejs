@@ -1,3 +1,5 @@
+
+
 export class FileExport {
 	constructor(file, exportedNode) {
 		this.file = file;
@@ -36,5 +38,9 @@ export class FileExport {
 			default:
 				throw new Error(`Invalid export ${node.type}`);
 		}
+	}
+
+	getImportPath(relativeTo, options) {
+
 	}
 }

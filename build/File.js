@@ -15,6 +15,14 @@ var _FileExport = require('./FileExport');
 
 var _FileImport = require('./FileImport');
 
+var _path = require('path');
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -30,6 +38,16 @@ var File = exports.File = function () {
 	}
 
 	_createClass(File, [{
+		key: 'getPath',
+		value: function getPath() {
+			return this.path;
+		}
+	}, {
+		key: 'getAbsolutePath',
+		value: function getAbsolutePath() {
+			return (0, _path.join)(this.project.getProjectRoot(), this.path);
+		}
+	}, {
 		key: 'preprocess',
 		value: function preprocess() {
 			this.parse();
@@ -88,8 +106,31 @@ var File = exports.File = function () {
 				return new _FileImport.FileImport(_this2, statement);
 			});
 			this.importStatements = importStatements;
-			console.log(importStatements.map(function (s) {
-				return s.getImportPath() + ' ' + s.getImportedNames();
+		}
+	}, {
+		key: 'getExports',
+		value: function getExports() {
+			return this.exportStatements;
+		}
+	}, {
+		key: 'getImportPath',
+		value: function getImportPath(relativeTo, optionsOrNull) {
+			var options = optionsOrNull || {};
+			var directory = (0, _path.dirname)(relativeTo);
+			var relativePath = (0, _path.relative)(directory, this.getAbsolutePath()).replace(/\\/g, '/');
+			if (!options.keepFileExtension) {
+				relativePath = relativePath.replace(/\.[a-z0-9]+$/i, '');
+			}
+			if (!relativePath.startsWith('.')) {
+				relativePath = './' + relativePath;
+			}
+			return relativePath;
+		}
+	}, {
+		key: 'getExportedNames',
+		value: function getExportedNames() {
+			return _lodash2.default.flatten(this.exportStatements.map(function (st) {
+				return st.getExportedNames();
 			}));
 		}
 	}]);

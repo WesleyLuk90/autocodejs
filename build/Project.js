@@ -24,6 +24,7 @@ var Project = exports.Project = function () {
 		_classCallCheck(this, Project);
 
 		this.projectRoot = projectRoot;
+		this.filesByPath = new Map();
 	}
 
 	_createClass(Project, [{
@@ -56,6 +57,30 @@ var Project = exports.Project = function () {
 		key: 'getSourceType',
 		value: function getSourceType() {
 			return this.project.sourceType || 'module';
+		}
+	}, {
+		key: 'addFile',
+		value: function addFile(file) {
+			this.filesByPath.set(file.getPath(), file);
+		}
+	}, {
+		key: 'removeFile',
+		value: function removeFile(file) {
+			this.filesByPath.set(file);
+		}
+	}, {
+		key: 'listExports',
+		value: function listExports(relativeFile) {
+			var exportsList = [];
+			this.filesByPath.forEach(function (file) {
+				var exportInfo = {};
+				exportInfo.path = file.getImportPath(relativeFile);
+				exportInfo.names = file.getExportedNames();
+				if (exportInfo.names.length > 0) {
+					exportsList.push(exportInfo);
+				}
+			});
+			return exportsList;
 		}
 	}]);
 

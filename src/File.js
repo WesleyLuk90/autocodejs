@@ -1,6 +1,8 @@
 import * as babylon from 'babylon';
 import { FileExport } from './FileExport';
 import { FileImport } from './FileImport';
+import { dirname, relative, join } from 'path';
+import _ from 'lodash';
 
 export class File {
 	constructor(path, contents, project) {
@@ -8,6 +10,14 @@ export class File {
 		this.contents = contents;
 		this.project = project;
 		this.preprocess();
+	}
+
+	getPath() {
+		return this.path;
+	}
+
+	getAbsolutePath() {
+		return join(this.project.getProjectRoot(), this.path);
 	}
 
 	preprocess() {
@@ -57,6 +67,26 @@ export class File {
 				}
 			}).map(statement => new FileImport(this, statement));
 		this.importStatements = importStatements;
-		console.log(importStatements.map(s => `${s.getImportPath()} ${s.getImportedNames()}`));
+	}
+
+	getExports() {
+		return this.exportStatements;
+	}
+
+	getImportPath(relativeTo, optionsOrNull) {
+		const options = optionsOrNull || {};
+		const directory = dirname(relativeTo);
+		let relativePath = relative(directory, this.getAbsolutePath()).replace(/\\/g, '/');
+		if (!options.keepFileExtension) {
+			relativePath = relativePath.replace(/\.[a-z0-9]+$/i, '');
+		}
+		if (!relativePath.startsWith('.')) {
+			relativePath = `./${relativePath}`;
+		}
+		return relativePath;
+	}
+
+	getExportedNames() {
+		return _.flatten(this.exportStatements.map(st => st.getExportedNames()));
 	}
 }

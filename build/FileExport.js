@@ -55,6 +55,9 @@ var FileExport = exports.FileExport = function () {
 					throw new Error('Invalid export ' + node.type);
 			}
 		}
+	}, {
+		key: 'getImportPath',
+		value: function getImportPath(relativeTo, options) {}
 	}]);
 
 	return FileExport;

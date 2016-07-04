@@ -17,6 +17,10 @@ var _q2 = _interopRequireDefault(_q);
 
 var _FileBuilder = require('./FileBuilder');
 
+var _chokidar = require('chokidar');
+
+var _chokidar2 = _interopRequireDefault(_chokidar);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -29,20 +33,45 @@ var Scanner = exports.Scanner = function () {
 	}
 
 	_createClass(Scanner, [{
-		key: 'getFiles',
-		value: function getFiles() {
+		key: 'loadFiles',
+		value: function loadFiles() {
 			var _this = this;
 
 			var options = {
 				cwd: this.project.getProjectRoot()
 			};
-			console.log(this.project.getGlobString(), options);
 			return _q2.default.nfcall(_glob2.default, this.project.getGlobString(), options).then(function (files) {
 				return _q2.default.all(files.map(function (path) {
 					return _FileBuilder.FileBuilder.createFile(_this.project, path);
 				}));
+			}).then(function (files) {
+				return _this.project.setFiles(files);
 			});
-			// .then(files => console.log(files));
+		}
+	}, {
+		key: 'watch',
+		value: function watch() {
+			var _this2 = this;
+
+			var options = { cwd: this.project.getProjectRoot() };
+			this.watcher = _chokidar2.default.watch(this.project.getGlobString(), options);
+			this.watcher.on('add', function (path) {
+				_FileBuilder.FileBuilder.createFile(_this2.project, path).then(function (file) {
+					return _this2.project.addFile(file);
+				}).catch(function (e) {
+					return console.error(e.stack);
+				});
+			});
+			this.watcher.on('change', function (path) {
+				_FileBuilder.FileBuilder.createFile(_this2.project, path).then(function (file) {
+					return _this2.project.addFile(file);
+				}).catch(function (e) {
+					return console.error(e.stack);
+				});
+			});
+			this.watcher.on('unlink', function (path) {
+				_this2.project.removeFile(path);
+			});
 		}
 	}]);
 

@@ -31,7 +31,7 @@ var FileBuilder = exports.FileBuilder = function () {
 		value: function createFile(project, path) {
 			var fullPath = (0, _path.join)(project.getProjectRoot(), path);
 			return _q2.default.nfcall(_fs.readFile, fullPath, 'utf-8').then(function (contents) {
-				return new _File.File(fullPath, contents, project);
+				return new _File.File(path, contents, project);
 			});
 		}
 	}]);
