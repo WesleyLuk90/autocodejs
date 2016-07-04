@@ -19,21 +19,21 @@ export class Scanner {
 			.then(files => this.project.setFiles(files));
 	}
 
+	updateFile(path) {
+		return FileBuilder.createFile(this.project, path)
+			.then(file => this.project.addFile(file))
+			.catch(e => console.error(e.stack));
+	}
+
+	removeFile(path) {
+		this.project.removeFile(path);
+	}
+
 	watch() {
 		const options = { cwd: this.project.getProjectRoot() };
 		this.watcher = chokidir.watch(this.project.getGlobString(), options);
-		this.watcher.on('add', (path) => {
-			FileBuilder.createFile(this.project, path)
-				.then(file => this.project.addFile(file))
-				.catch(e => console.error(e.stack));
-		});
-		this.watcher.on('change', (path) => {
-			FileBuilder.createFile(this.project, path)
-				.then(file => this.project.addFile(file))
-				.catch(e => console.error(e.stack));
-		});
-		this.watcher.on('unlink', (path) => {
-			this.project.removeFile(path);
-		});
+		this.watcher.on('add', (path) => this.updateFile(path));
+		this.watcher.on('change', (path) => this.updateFile(path));
+		this.watcher.on('unlink', (path) => this.removeFile(path));
 	}
 }
