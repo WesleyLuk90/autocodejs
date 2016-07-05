@@ -98,9 +98,10 @@ var Scanner = exports.Scanner = function () {
 				persistent: persistent,
 				depth: 99
 			};
+			var promises = [];
 			this.watcher = _chokidar2.default.watch(this.project.getGlobString(), options);
 			this.watcher.on('add', function (path) {
-				return _this3.updateFile(path);
+				return promises.push(_this3.updateFile(path));
 			});
 			this.watcher.on('change', function (path) {
 				return _this3.updateFile(path);
@@ -113,7 +114,9 @@ var Scanner = exports.Scanner = function () {
 			this.watcher.on('ready', function () {
 				return watcherDefer.resolve();
 			});
-			return watcherDefer.promise;
+			return watcherDefer.promise.then(function () {
+				return _q2.default.all(promises);
+			});
 		}
 	}]);
 

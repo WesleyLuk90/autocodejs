@@ -57,13 +57,14 @@ export class Scanner {
 			persistent,
 			depth: 99,
 		};
+		const promises = [];
 		this.watcher = chokidir.watch(this.project.getGlobString(), options);
-		this.watcher.on('add', (path) => this.updateFile(path));
+		this.watcher.on('add', (path) => promises.push(this.updateFile(path)));
 		this.watcher.on('change', (path) => this.updateFile(path));
 		this.watcher.on('unlink', (path) => this.removeFile(path));
 
 		const watcherDefer = Q.defer();
 		this.watcher.on('ready', () => watcherDefer.resolve());
-		return watcherDefer.promise;
+		return watcherDefer.promise.then(() => Q.all(promises));
 	}
 }
