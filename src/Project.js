@@ -86,7 +86,7 @@ export class Project {
 	}
 
 	getCodeParser() {
-		return new CodeParser();
+		return new CodeParser(this.options);
 	}
 
 	listExports(relativeFile) {

@@ -132,7 +132,7 @@ var Project = exports.Project = function () {
 	}, {
 		key: 'getCodeParser',
 		value: function getCodeParser() {
-			return new _CodeParser.CodeParser();
+			return new _CodeParser.CodeParser(this.options);
 		}
 	}, {
 		key: 'listExports',

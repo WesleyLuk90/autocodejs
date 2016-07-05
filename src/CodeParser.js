@@ -1,8 +1,14 @@
 import * as babylon from 'babylon';
+import _ from 'lodash';
 
 export class CodeParser {
 	constructor(options) {
-		this.options = options || { sourceType: 'module' };
+		const defaults = {
+			sourceType: 'module',
+			plugins: [],
+		};
+		_.defaults(options, defaults);
+		this.options = options;
 	}
 
 	parse(code) {
