@@ -95,7 +95,8 @@ var Scanner = exports.Scanner = function () {
 
 			var options = {
 				cwd: this.project.getProjectRoot(),
-				persistent: persistent
+				persistent: persistent,
+				depth: 99
 			};
 			this.watcher = _chokidar2.default.watch(this.project.getGlobString(), options);
 			this.watcher.on('add', function (path) {

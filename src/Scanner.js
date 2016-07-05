@@ -55,6 +55,7 @@ export class Scanner {
 		const options = {
 			cwd: this.project.getProjectRoot(),
 			persistent,
+			depth: 99,
 		};
 		this.watcher = chokidir.watch(this.project.getGlobString(), options);
 		this.watcher.on('add', (path) => this.updateFile(path));
