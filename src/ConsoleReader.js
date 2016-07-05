@@ -1,4 +1,3 @@
-
 export class ConsoleReader {
 	constructor(commandParser) {
 		this.commandParser = commandParser;
@@ -29,7 +28,11 @@ export class ConsoleReader {
 		if (!command) {
 			return;
 		}
-		const result = this.commandParser.parse(command);
-		console.log(result);
+		try {
+			const result = this.commandParser.parse(command);
+			console.log(result);
+		} catch (e) {
+			console.error(e.stack);
+		}
 	}
 }

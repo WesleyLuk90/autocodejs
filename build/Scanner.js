@@ -61,17 +61,18 @@ var Scanner = exports.Scanner = function () {
 		}
 	}, {
 		key: 'watch',
-		value: function watch() {
-			return _q2.default.all([this.watchFiles(), this.watchModules()]);
+		value: function watch(persistent) {
+			return _q2.default.all([this.watchFiles(persistent), this.watchModules(persistent)]);
 		}
 	}, {
 		key: 'watchModules',
-		value: function watchModules() {
+		value: function watchModules(persistent) {
 			var _this2 = this;
 
 			var modulesOptions = {
 				cwd: this.project.getProjectRoot(),
-				ignored: /node_modules\/.*\/.*/
+				ignored: /node_modules\/.*\/.*/,
+				persistent: persistent
 			};
 			this.modulesWatcher = _chokidar2.default.watch('node_modules/*', modulesOptions);
 			this.modulesWatcher.on('addDir', function (path) {
@@ -89,10 +90,13 @@ var Scanner = exports.Scanner = function () {
 		}
 	}, {
 		key: 'watchFiles',
-		value: function watchFiles() {
+		value: function watchFiles(persistent) {
 			var _this3 = this;
 
-			var options = { cwd: this.project.getProjectRoot() };
+			var options = {
+				cwd: this.project.getProjectRoot(),
+				persistent: persistent
+			};
 			this.watcher = _chokidar2.default.watch(this.project.getGlobString(), options);
 			this.watcher.on('add', function (path) {
 				return _this3.updateFile(path);
@@ -103,11 +107,11 @@ var Scanner = exports.Scanner = function () {
 			this.watcher.on('unlink', function (path) {
 				return _this3.removeFile(path);
 			});
+
 			var watcherDefer = _q2.default.defer();
 			this.watcher.on('ready', function () {
 				return watcherDefer.resolve();
 			});
-
 			return watcherDefer.promise;
 		}
 	}]);

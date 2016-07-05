@@ -9,10 +9,11 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var CommandParser = exports.CommandParser = function () {
-	function CommandParser(project) {
+	function CommandParser(project, options) {
 		_classCallCheck(this, CommandParser);
 
 		this.project = project;
+		this.options = options;
 	}
 
 	_createClass(CommandParser, [{
@@ -34,19 +35,28 @@ var CommandParser = exports.CommandParser = function () {
 			}
 		}
 	}, {
+		key: 'formatJSON',
+		value: function formatJSON(object) {
+			var spaces = this.options.prettyPrint ? 4 : 0;
+			return JSON.stringify(object, null, spaces);
+		}
+	}, {
 		key: 'listImports',
 		value: function listImports(commandObject) {
 			var file = commandObject.file;
+			if (!file) {
+				throw new Error('Parameter file must be provided');
+			}
 			var importList = this.project.listExports(file);
 			var modules = this.project.getModules(file);
-			return JSON.stringify({ importList: importList, modules: modules });
+			return this.formatJSON({ importList: importList, modules: modules });
 		}
 	}, {
 		key: 'getInsertPoint',
 		value: function getInsertPoint(commandObject) {
 			var contents = commandObject.contents;
 			var insertPoint = this.project.findInsertPoint(contents);
-			return JSON.stringify({ insertPoint: insertPoint });
+			return this.formatJSON({ insertPoint: insertPoint });
 		}
 	}]);
 

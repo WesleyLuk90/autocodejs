@@ -1,6 +1,7 @@
 export class CommandParser {
-	constructor(project) {
+	constructor(project, options) {
 		this.project = project;
+		this.options = options;
 	}
 
 	parse(command) {
@@ -20,16 +21,24 @@ export class CommandParser {
 		}
 	}
 
+	formatJSON(object) {
+		const spaces = this.options.prettyPrint ? 4 : 0;
+		return JSON.stringify(object, null, spaces);
+	}
+
 	listImports(commandObject) {
 		const file = commandObject.file;
+		if (!file) {
+			throw new Error('Parameter file must be provided');
+		}
 		const importList = this.project.listExports(file);
 		const modules = this.project.getModules(file);
-		return JSON.stringify({ importList, modules });
+		return this.formatJSON({ importList, modules });
 	}
 
 	getInsertPoint(commandObject) {
 		const contents = commandObject.contents;
 		const insertPoint = this.project.findInsertPoint(contents);
-		return JSON.stringify({ insertPoint });
+		return this.formatJSON({ insertPoint });
 	}
 }

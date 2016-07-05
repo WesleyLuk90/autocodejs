@@ -29,17 +29,18 @@ export class Scanner {
 		return path.replace(/.*[\/\\]([^\/\\]+)/, '$1');
 	}
 
-	watch() {
+	watch(persistent) {
 		return Q.all([
-			this.watchFiles(),
-			this.watchModules(),
+			this.watchFiles(persistent),
+			this.watchModules(persistent),
 		]);
 	}
 
-	watchModules() {
+	watchModules(persistent) {
 		const modulesOptions = {
 			cwd: this.project.getProjectRoot(),
 			ignored: /node_modules\/.*\/.*/,
+			persistent,
 		};
 		this.modulesWatcher = chokidir.watch('node_modules/*', modulesOptions);
 		this.modulesWatcher.on('addDir', (path) => this.addNodeModule(path));
@@ -50,15 +51,18 @@ export class Scanner {
 		return modulesDefer.promise;
 	}
 
-	watchFiles() {
-		const options = { cwd: this.project.getProjectRoot() };
+	watchFiles(persistent) {
+		const options = {
+			cwd: this.project.getProjectRoot(),
+			persistent,
+		};
 		this.watcher = chokidir.watch(this.project.getGlobString(), options);
 		this.watcher.on('add', (path) => this.updateFile(path));
 		this.watcher.on('change', (path) => this.updateFile(path));
 		this.watcher.on('unlink', (path) => this.removeFile(path));
+
 		const watcherDefer = Q.defer();
 		this.watcher.on('ready', () => watcherDefer.resolve());
-
 		return watcherDefer.promise;
 	}
 }

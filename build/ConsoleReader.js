@@ -48,8 +48,12 @@ var ConsoleReader = exports.ConsoleReader = function () {
 			if (!command) {
 				return;
 			}
-			var result = this.commandParser.parse(command);
-			console.log(result);
+			try {
+				var result = this.commandParser.parse(command);
+				console.log(result);
+			} catch (e) {
+				console.error(e.stack);
+			}
 		}
 	}]);
 
