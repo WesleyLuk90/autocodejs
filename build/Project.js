@@ -142,7 +142,7 @@ var Project = exports.Project = function () {
 			var exportsList = [];
 			this.filesByPath.forEach(function (file) {
 				var exportInfo = {};
-				exportInfo.path = file.getImportPath(relativeFile);
+				exportInfo.path = file.getImportPath(relativeFile, { keepFileExtension: _this2.options.keepFileExtension });
 				exportInfo.names = file.getExportedNames();
 				if (exportInfo.names.length > 0) {
 					exportsList.push(exportInfo);
@@ -178,7 +178,7 @@ var Project = exports.Project = function () {
 				});
 			});
 			this.filesByPath.forEach(function (file) {
-				var relativeImport = file.getImportPath(relativeFile);
+				var relativeImport = file.getImportPath(relativeFile, { keepFileExtension: _this3.options.keepFileExtension });
 				modules.push({
 					path: relativeImport,
 					name: _this3.pathToModuleName(relativeImport)

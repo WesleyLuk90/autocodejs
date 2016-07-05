@@ -93,7 +93,7 @@ export class Project {
 		const exportsList = [];
 		this.filesByPath.forEach(file => {
 			const exportInfo = {};
-			exportInfo.path = file.getImportPath(relativeFile);
+			exportInfo.path = file.getImportPath(relativeFile, { keepFileExtension: this.options.keepFileExtension });
 			exportInfo.names = file.getExportedNames();
 			if (exportInfo.names.length > 0) {
 				exportsList.push(exportInfo);
@@ -120,7 +120,7 @@ export class Project {
 			name: this.convertModuleName(module),
 		}));
 		this.filesByPath.forEach(file => {
-			const relativeImport = file.getImportPath(relativeFile);
+			const relativeImport = file.getImportPath(relativeFile, { keepFileExtension: this.options.keepFileExtension });
 			modules.push({
 				path: relativeImport,
 				name: this.pathToModuleName(relativeImport),

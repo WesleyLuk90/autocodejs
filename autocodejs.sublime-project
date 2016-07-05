@@ -1,15 +1,13 @@
 {
-	"folders":
-	[
-		{
-			"path": ".",
-            "folder_exclude_patterns": ["node_modules", "build"]
-		}
-	],
-	"settings":
-	{
-		"FuzzyFilePath":
-		{
-		}
+	"folders": [{
+		"path": ".",
+		"folder_exclude_patterns": ["node_modules", "build"]
+	}],
+	"build_systems": [{
+		"name": "Babel",
+		"shell_cmd": ".\\node_modules\\.bin\\babel.cmd src --out-dir build"
+	}],
+	"settings": {
+		"FuzzyFilePath": {}
 	}
 }

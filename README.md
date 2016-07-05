@@ -6,6 +6,8 @@ A tool to automate javascript coding tasks
 Create an .autocodejsrc file in the root of your project
 ```
 {
-	"paths": "src/**/*.js"
+	"paths": "src/**/*.js",
+    "plugins": ["jsx"],
+    "keepFileExtension": false
 }
 ```
