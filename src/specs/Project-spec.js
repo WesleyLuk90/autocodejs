@@ -18,4 +18,23 @@ describe('Project', () => {
 		const syntaxErrorCode = 'function test!!!!(){};';
 		expect(project.findInsertPoint(syntaxErrorCode)).toEqual(0);
 	});
+
+	it('should correctly convert the module names', () => {
+		const project = new Project();
+		project.setOptions({});
+
+		expect(project.convertModuleName('q')).toEqual('Q');
+		expect(project.convertModuleName('lodash')).toEqual('_');
+		expect(project.convertModuleName('react')).toEqual('React');
+		expect(project.convertModuleName('my-other-module')).toEqual('myOtherModule');
+	});
+
+	it('should correctly convert a path to a module name', () => {
+		const project = new Project();
+
+		expect(project.pathToModuleName('some-module')).toEqual('someModule');
+		expect(project.pathToModuleName('/a/nother/module')).toEqual('module');
+		expect(project.pathToModuleName('module.js')).toEqual('module');
+		expect(project.pathToModuleName('/anUpper/CasedModule')).toEqual('casedModule');
+	});
 });

@@ -23,15 +23,48 @@ export class Project {
 	load() {
 		return Q.nfcall(readFile, this.getRCPath(), 'utf-8')
 			.then(text => JSON.parse(text))
-			.then(project => { this.project = project; });
+			.then(options => this.setOptions(options));
 	}
 
 	getGlobString() {
-		return this.project.paths;
+		return this.options.paths;
+	}
+
+	getNameOverrides() {
+		if (!this.options.moduleNames) {
+			return {
+				q: 'Q',
+				lodash: '_',
+				react: 'React',
+			};
+		}
+		return this.options.moduleNames;
+	}
+
+	setOptions(options) {
+		this.options = options;
+	}
+
+	convertModuleName(name) {
+		const overrides = this.getNameOverrides();
+		if (overrides[name]) {
+			return overrides[name];
+		}
+		return this.camelCaseSymbols(name);
+	}
+
+	camelCaseSymbols(name) {
+		return name.replace(/[^\w]+(\w?)/g, (match, firstLetter) => firstLetter.toUpperCase());
+	}
+
+	pathToModuleName(name) {
+		const finalPart = name.match(/\/?([^\/\.]+)(\..*)?$/)[1];
+		return this.camelCaseSymbols(finalPart
+			.replace(/^\w/, (match) => match.toLowerCase()));
 	}
 
 	getSourceType() {
-		return this.project.sourceType || 'module';
+		return this.options.sourceType || 'module';
 	}
 
 	addFile(file) {
@@ -69,7 +102,6 @@ export class Project {
 		const orderedExportsList = _.orderBy(
 			exportsList, [(e) => this.countSlashes(e.path), (e) => e.path]
 		);
-		console.log(orderedExportsList);
 		return orderedExportsList;
 	}
 
@@ -81,9 +113,19 @@ export class Project {
 		this.nodeModules.delete(path);
 	}
 
-	getModules() {
+	getModules(relativeFile) {
 		const modules = [];
-		this.nodeModules.forEach(module => modules.push(module));
+		this.nodeModules.forEach(module => modules.push({
+			path: module,
+			name: this.convertModuleName(module),
+		}));
+		this.filesByPath.forEach(file => {
+			const relativeImport = file.getImportPath(relativeFile);
+			modules.push({
+				path: relativeImport,
+				name: this.pathToModuleName(relativeImport),
+			});
+		});
 		return modules;
 	}
 

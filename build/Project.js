@@ -53,19 +53,60 @@ var Project = exports.Project = function () {
 
 			return _q2.default.nfcall(_fs.readFile, this.getRCPath(), 'utf-8').then(function (text) {
 				return JSON.parse(text);
-			}).then(function (project) {
-				_this.project = project;
+			}).then(function (options) {
+				return _this.setOptions(options);
 			});
 		}
 	}, {
 		key: 'getGlobString',
 		value: function getGlobString() {
-			return this.project.paths;
+			return this.options.paths;
+		}
+	}, {
+		key: 'getNameOverrides',
+		value: function getNameOverrides() {
+			if (!this.options.moduleNames) {
+				return {
+					q: 'Q',
+					lodash: '_',
+					react: 'React'
+				};
+			}
+			return this.options.moduleNames;
+		}
+	}, {
+		key: 'setOptions',
+		value: function setOptions(options) {
+			this.options = options;
+		}
+	}, {
+		key: 'convertModuleName',
+		value: function convertModuleName(name) {
+			var overrides = this.getNameOverrides();
+			if (overrides[name]) {
+				return overrides[name];
+			}
+			return this.camelCaseSymbols(name);
+		}
+	}, {
+		key: 'camelCaseSymbols',
+		value: function camelCaseSymbols(name) {
+			return name.replace(/[^\w]+(\w?)/g, function (match, firstLetter) {
+				return firstLetter.toUpperCase();
+			});
+		}
+	}, {
+		key: 'pathToModuleName',
+		value: function pathToModuleName(name) {
+			var finalPart = name.match(/\/?([^\/\.]+)(\..*)?$/)[1];
+			return this.camelCaseSymbols(finalPart.replace(/^\w/, function (match) {
+				return match.toLowerCase();
+			}));
 		}
 	}, {
 		key: 'getSourceType',
 		value: function getSourceType() {
-			return this.project.sourceType || 'module';
+			return this.options.sourceType || 'module';
 		}
 	}, {
 		key: 'addFile',
@@ -112,7 +153,6 @@ var Project = exports.Project = function () {
 			}, function (e) {
 				return e.path;
 			}]);
-			console.log(orderedExportsList);
 			return orderedExportsList;
 		}
 	}, {
@@ -127,10 +167,22 @@ var Project = exports.Project = function () {
 		}
 	}, {
 		key: 'getModules',
-		value: function getModules() {
+		value: function getModules(relativeFile) {
+			var _this3 = this;
+
 			var modules = [];
 			this.nodeModules.forEach(function (module) {
-				return modules.push(module);
+				return modules.push({
+					path: module,
+					name: _this3.convertModuleName(module)
+				});
+			});
+			this.filesByPath.forEach(function (file) {
+				var relativeImport = file.getImportPath(relativeFile);
+				modules.push({
+					path: relativeImport,
+					name: _this3.pathToModuleName(relativeImport)
+				});
 			});
 			return modules;
 		}

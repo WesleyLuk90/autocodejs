@@ -2,7 +2,8 @@ import minimist from 'minimist';
 import { Scanner } from './Scanner';
 import { Project } from './Project';
 import { CommandParser } from './CommandParser';
-import { Server } from './Server';
+import { ConsoleReader } from './ConsoleReader';
+import { log } from './log';
 
 function parseArgs(args) {
 	const options = {};
@@ -33,14 +34,13 @@ function main() {
 		.then(() => {
 			const scanner = new Scanner(project);
 			if (options.server) {
-				scanner.watch();
-				const parser = new CommandParser(project);
-				const server = new Server(parser);
-				server.start(options.port);
-				return null;
-			} else {
-				return scanner.loadFiles();
+				return scanner.watch().then(() => {
+					const parser = new CommandParser(project);
+					const reader = new ConsoleReader(parser);
+					reader.start();
+				});
 			}
+			return null;
 		})
 		.done();
 }

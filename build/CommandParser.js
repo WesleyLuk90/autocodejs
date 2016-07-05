@@ -38,7 +38,7 @@ var CommandParser = exports.CommandParser = function () {
 		value: function listImports(commandObject) {
 			var file = commandObject.file;
 			var importList = this.project.listExports(file);
-			var modules = this.project.getModules();
+			var modules = this.project.getModules(file);
 			return JSON.stringify({ importList: importList, modules: modules });
 		}
 	}, {

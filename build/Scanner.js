@@ -13,6 +13,10 @@ var _chokidar = require('chokidar');
 
 var _chokidar2 = _interopRequireDefault(_chokidar);
 
+var _q = require('q');
+
+var _q2 = _interopRequireDefault(_q);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -58,21 +62,17 @@ var Scanner = exports.Scanner = function () {
 	}, {
 		key: 'watch',
 		value: function watch() {
+			return _q2.default.all([this.watchFiles(), this.watchModules()]);
+		}
+	}, {
+		key: 'watchModules',
+		value: function watchModules() {
 			var _this2 = this;
 
-			var options = { cwd: this.project.getProjectRoot() };
-			this.watcher = _chokidar2.default.watch(this.project.getGlobString(), options);
-			this.watcher.on('add', function (path) {
-				return _this2.updateFile(path);
-			});
-			this.watcher.on('change', function (path) {
-				return _this2.updateFile(path);
-			});
-			this.watcher.on('unlink', function (path) {
-				return _this2.removeFile(path);
-			});
-
-			var modulesOptions = { cwd: this.project.getProjectRoot() };
+			var modulesOptions = {
+				cwd: this.project.getProjectRoot(),
+				ignored: /node_modules\/.*\/.*/
+			};
 			this.modulesWatcher = _chokidar2.default.watch('node_modules/*', modulesOptions);
 			this.modulesWatcher.on('addDir', function (path) {
 				return _this2.addNodeModule(path);
@@ -80,6 +80,35 @@ var Scanner = exports.Scanner = function () {
 			this.modulesWatcher.on('unlinkDir', function (path) {
 				return _this2.removeNodeModule(path);
 			});
+
+			var modulesDefer = _q2.default.defer();
+			this.modulesWatcher.on('ready', function () {
+				return modulesDefer.resolve();
+			});
+			return modulesDefer.promise;
+		}
+	}, {
+		key: 'watchFiles',
+		value: function watchFiles() {
+			var _this3 = this;
+
+			var options = { cwd: this.project.getProjectRoot() };
+			this.watcher = _chokidar2.default.watch(this.project.getGlobString(), options);
+			this.watcher.on('add', function (path) {
+				return _this3.updateFile(path);
+			});
+			this.watcher.on('change', function (path) {
+				return _this3.updateFile(path);
+			});
+			this.watcher.on('unlink', function (path) {
+				return _this3.removeFile(path);
+			});
+			var watcherDefer = _q2.default.defer();
+			this.watcher.on('ready', function () {
+				return watcherDefer.resolve();
+			});
+
+			return watcherDefer.promise;
 		}
 	}]);
 

@@ -23,7 +23,7 @@ export class CommandParser {
 	listImports(commandObject) {
 		const file = commandObject.file;
 		const importList = this.project.listExports(file);
-		const modules = this.project.getModules();
+		const modules = this.project.getModules(file);
 		return JSON.stringify({ importList, modules });
 	}
 
